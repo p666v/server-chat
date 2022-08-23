@@ -7,7 +7,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServerServiceImpl implements ServerService, Observable {
+public class ServerServiceImpl implements ServerService {
     public final static int PORT = 8081;
     public final List<Observer> observers = new ArrayList<>();
 
@@ -20,7 +20,7 @@ public class ServerServiceImpl implements ServerService, Observable {
             Socket socket = serverSocket.accept();
 
             if (socket != null) {
-                Thread thread = new Thread(new ClientRunnable(socket));
+                Thread thread = new Thread(new ClientRunnable(socket, this));
                 thread.start();
             }
         }
