@@ -42,4 +42,15 @@ public class ServerServiceImpl implements ServerService {
             observer.notifyMe(message);
         }
     }
+
+    @Override
+    public void notifyObserverExpectMe(String message, Observer expectMe) {
+        for (Observer observer : observers) {
+            if (!observer.equals(expectMe)){
+                observer.notifyMe(message);
+            }
+        }
+    }
+
+
 }
