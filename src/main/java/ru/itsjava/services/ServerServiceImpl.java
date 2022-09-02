@@ -1,6 +1,9 @@
 package ru.itsjava.services;
 
 import lombok.SneakyThrows;
+import ru.itsjava.dao.UserDao;
+import ru.itsjava.dao.UserDaoImpl;
+import ru.itsjava.utils.Props;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -10,6 +13,7 @@ import java.util.List;
 public class ServerServiceImpl implements ServerService {
     public final static int PORT = 8081;
     public final List<Observer> observers = new ArrayList<>();
+    private final UserDao userDao = new UserDaoImpl(new Props());
 
     @SneakyThrows
     @Override
@@ -20,7 +24,7 @@ public class ServerServiceImpl implements ServerService {
             Socket socket = serverSocket.accept();
 
             if (socket != null) {
-                Thread thread = new Thread(new ClientRunnable(socket, this));
+                Thread thread = new Thread(new ClientRunnable(socket, this, userDao));
                 thread.start();
             }
         }
