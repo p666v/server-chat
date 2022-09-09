@@ -1,14 +1,15 @@
 package ru.itsjava.dao;
 
 import lombok.AllArgsConstructor;
-import ru.itsjava.domain.Message;
-import ru.itsjava.domain.User;
 import ru.itsjava.utils.Props;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 @AllArgsConstructor
-public class MessageDaoImpl implements MessageDao{
+public class MessageDaoImpl implements MessageDao {
     private final Props props;
 
 

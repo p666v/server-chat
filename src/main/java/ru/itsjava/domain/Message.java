@@ -1,10 +1,17 @@
 package ru.itsjava.domain;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-@AllArgsConstructor
+
 @Data
 public class Message {
-    private User user;
+    private final String user;
     private final String text;
+    private final int id;
+
+
+    public Message(String user, String text, int id) {
+        this.user = user;
+        this.text = text;
+        this.id = id;
+    }
 }

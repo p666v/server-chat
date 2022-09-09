@@ -2,24 +2,26 @@ package ru.itsjava.services;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import ru.itsjava.dao.MessageDao;
 import ru.itsjava.dao.UserDao;
+import ru.itsjava.domain.Message;
 import ru.itsjava.domain.User;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 @RequiredArgsConstructor
 public class ClientRunnable implements Runnable, Observer {
     private final Socket socket;
     private final ServerService serverService;
     private final UserDao userDao;
+    private final MessageDao messageDao;
     private User user;
-
-
-
-
+    private List<Message> messageList = new ArrayList<>();
 
     @SneakyThrows
     @Override
@@ -34,12 +36,23 @@ public class ClientRunnable implements Runnable, Observer {
             } else if (messageFromClient.contains("autho")) {
                 if (authorization(messageFromClient)) {
                     serverService.addObserver(this);
+                    serverService.notifyObserverMe("Авторизация успешна!", this); //test
                     serverService.notifyObserverExpectMe(user.getName() + " присоеденился к чату", this);
                     while ((messageFromClient = bufferedReader.readLine()) != null) {
                         if (!messageFromClient.equals("!Exit!")) {
                             System.out.println(user.getName() + ":" + messageFromClient);
+                            Message message = new Message(user.getName(), messageFromClient, user.getId());
+                            messageList.add(message);
                             serverService.notifyObserverExpectMe(user.getName() + ":" + messageFromClient, this);
+
                         } else {
+                            for (int i = 0; i < messageList.size(); i++) {
+                                messageDao.writeMessage(
+                                        messageList.get(i).getUser(),
+                                        messageList.get(i).getText(),
+                                        messageList.get(i).getId());
+                            }
+                            messageList.clear();
                             serverService.notifyObserverExpectMe(user.getName() + " покинул чат", this);
                             serverService.deleteObserver(this);
                             bufferedReader.close();
@@ -54,14 +67,6 @@ public class ClientRunnable implements Runnable, Observer {
         }
     }
 
-//        if (authorization(bufferedReader)) {
-//            serverService.addObserver(this);
-//            while ((messageFromClient = bufferedReader.readLine()) != null) {
-//                System.out.println(user.getName() + ":" + messageFromClient);
-//                serverService.notifyObserverExpectMe(user.getName() + ":" + messageFromClient, this);
-//            }
-//        }
-
 
     @SneakyThrows
     private boolean authorization(String messageFromClient) {
@@ -69,7 +74,7 @@ public class ClientRunnable implements Runnable, Observer {
             String login = messageFromClient.substring(7).split(":")[0];
             String password = messageFromClient.substring(7).split(":")[1];
             user = userDao.findByNameAndPassword(login, password);
-
+            System.out.println("Пользователь " + user.getName() + ": Авторизация успешна!");
             return true;
         }
         return false;
@@ -81,7 +86,6 @@ public class ClientRunnable implements Runnable, Observer {
             String login = messageFromClient.substring(14).split(":")[0];
             String password = messageFromClient.substring(14).split(":")[1];
             userDao.createUser(login, password);
-
         }
     }
 
@@ -92,33 +96,5 @@ public class ClientRunnable implements Runnable, Observer {
         clientWriter.println(message);
         clientWriter.flush();
     }
-
-
-//    @SneakyThrows
-//    private boolean authorization(BufferedReader bufferedReader) {
-//        String authorizationMessage;
-//        while ((authorizationMessage = bufferedReader.readLine()) != null) {
-//            if (authorizationMessage.startsWith("!autho!")) {
-//                String login = authorizationMessage.substring(7).split(":")[0];
-//                String password = authorizationMessage.substring(7).split(":")[1];
-//                user = userDao.findByNameAndPassword(login, password);
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-
-//    @SneakyThrows
-//    private void registration(BufferedReader bufferedReader) {
-//        String registrationMessage;
-//        while ((registrationMessage = bufferedReader.readLine()) != null) {
-//            if (registrationMessage.startsWith("!Registration!")) {
-//                String login = registrationMessage.substring(14).split(":")[0];
-//                String password = registrationMessage.substring(14).split(":")[1];
-//                userDao.createUser(login, password);
-//            }
-//        }
-//    }
-
 
 }

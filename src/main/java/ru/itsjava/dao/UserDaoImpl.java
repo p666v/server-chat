@@ -1,18 +1,22 @@
 package ru.itsjava.dao;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.itsjava.domain.User;
 import ru.itsjava.utils.Props;
 
 import java.sql.*;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserDaoImpl implements UserDao {
     private final Props props;
 
 
     @Override
     public User findByNameAndPassword(String name, String password) {
+
+
         try (Connection connection = DriverManager.getConnection(
                 props.getValue("db.url"),
                 props.getValue("db.login"),
@@ -25,7 +29,7 @@ public class UserDaoImpl implements UserDao {
 
             ResultSet resultSet = preparedStatement.executeQuery();
             resultSet.next();
-//            int id = resultSet.getInt("id");
+
             int userCount = resultSet.getInt("cnt");
 
             PreparedStatement preparedStatement2 = connection.prepareStatement(
@@ -36,17 +40,13 @@ public class UserDaoImpl implements UserDao {
             resultSet2.next();
             int id = resultSet2.getInt("id");
 
-
             if (userCount == 1) {
                 return new User(name, password, id);
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         throw new UserNotFoundException("User not found");
-
     }
 
 
